@@ -1,0 +1,564 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Newman Rugby Academy Stats</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Phosphor Icons -->
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <!-- Chart.js for Timeline Graph -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <style>
+        /* Prevent pull-to-refresh and bounce on iPad */
+        body {
+            overscroll-behavior-y: none;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        /* Hide scrollbar for timeline but keep functionality */
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+
+        /* Tactile 3D Buttons for iPad - Glassmorphism Update */
+        .stat-btn {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 0.75rem 0.5rem;
+            border-radius: 0.75rem;
+            font-weight: 700;
+            font-size: 0.9rem;
+            transition: all 0.1s ease;
+            box-shadow: 0 4px 0 0 rgba(0,0,0,0.5);
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: #fff;
+            user-select: none;
+            cursor: pointer;
+        }
+        .stat-btn:active {
+            transform: translateY(4px);
+            box-shadow: 0 0 0 0 rgba(0,0,0,0.5);
+        }
+        .stat-btn i {
+            font-size: 1.75rem;
+            margin-bottom: 0.25rem;
+            opacity: 1; /* Reset opacity for vibrant icons */
+        }
+
+        /* Themed Button Colors - Applied strictly to icons for black/glass theme */
+        .btn-score i { color: #10b981; }
+        .btn-score-bad i { color: #ef4444; }
+        .btn-attack i { color: #3b82f6; }
+        .btn-defence i { color: #8b5cf6; }
+        .btn-error i { color: #f43f5e; }
+        .btn-setpiece i { color: #f59e0b; }
+        .btn-discipline i { color: #fbbf24; }
+        
+        .cat-header {
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: #9ca3af;
+            margin-bottom: 0.5rem;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+        }
+    </style>
+</head>
+
+<body class="bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-zinc-800 via-black to-black text-slate-100 font-sans h-screen overflow-hidden flex flex-col">
+
+    <!-- HEADER / TOP BAR -->
+    <header class="bg-white/5 backdrop-blur-md border-b border-white/10 p-2 lg:p-4 flex flex-wrap lg:flex-nowrap justify-between items-center z-10 shadow-md gap-2">
+        
+        <!-- Left: Logo & Match Details -->
+        <div class="flex items-center gap-3 w-full lg:w-auto">
+            <img src="Newman_Rugby_Academy.png" alt="Newman Rugby Academy Logo" onerror="this.outerHTML='<div class=\'w-12 h-12 bg-white/10 border border-white/20 rounded flex items-center justify-center font-bold text-xl\'>N</div>'" class="w-12 h-12 object-contain rounded-lg p-1">
+            <div>
+                <h1 class="text-xl font-bold tracking-tight text-white leading-tight">Newman Rugby Academy</h1>
+                <input type="text" id="opponentName" placeholder="vs. Opponent" class="bg-black/50 text-sm text-white px-2 py-1 rounded border border-white/10 focus:outline-none focus:border-white/30 w-48 mt-1 backdrop-blur-sm">
+            </div>
+        </div>
+
+        <!-- Center: Timer & Controls -->
+        <div class="flex items-center gap-3 bg-black/40 backdrop-blur-md p-2 rounded-xl border border-white/10 shadow-inner w-full lg:w-auto justify-center">
+            <div id="timerDisplay" class="text-4xl font-mono font-bold min-w-[160px] text-center text-red-500 tracking-wider">00:00</div>
+            
+            <div class="flex flex-col gap-1">
+                <div class="flex gap-1">
+                    <button id="btnStartPause" onclick="toggleTimer()" class="bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 px-4 py-2 rounded font-bold flex items-center gap-1 transition-colors shadow-sm text-sm backdrop-blur-sm">
+                        <i class="ph-fill ph-play"></i> START
+                    </button>
+                    <button onclick="resetTimer()" class="bg-white/5 border border-white/10 hover:bg-white/10 text-white px-3 py-2 rounded transition-colors shadow-sm backdrop-blur-sm" title="Reset Timer">
+                        <i class="ph-bold ph-arrow-counter-clockwise"></i>
+                    </button>
+                </div>
+                <!-- Wake Lock Indicator -->
+                <div id="wakeLockIndicator" class="hidden text-xs text-emerald-400 font-semibold flex items-center gap-1 justify-center">
+                    <i class="ph-fill ph-lock-key"></i> Screen Locked ON
+                </div>
+            </div>
+
+            <!-- Half Toggle -->
+            <div class="flex bg-black/40 border border-white/10 rounded-lg p-1 ml-2 backdrop-blur-sm">
+                <button id="btnH1" onclick="setHalf(1)" class="px-3 py-1 rounded text-sm font-bold bg-white/20 text-white backdrop-blur shadow-sm transition-colors">H1</button>
+                <button id="btnH2" onclick="setHalf(2)" class="px-3 py-1 rounded text-sm font-bold text-white/50 hover:text-white transition-colors">H2</button>
+            </div>
+        </div>
+
+        <!-- Right: Actions -->
+        <div class="flex gap-2 w-full lg:w-auto justify-end">
+            <button onclick="openGraph()" class="bg-indigo-500/20 text-indigo-300 border border-indigo-500/30 hover:bg-indigo-500/30 px-3 py-2 rounded font-bold text-sm flex items-center gap-1 shadow-md transition-all backdrop-blur-sm">
+                <i class="ph-fill ph-chart-line-up"></i> Match Graph
+            </button>
+            <button onclick="exportCSV()" class="bg-sky-500/20 text-sky-300 border border-sky-500/30 hover:bg-sky-500/30 px-3 py-2 rounded font-bold text-sm flex items-center gap-1 shadow-md transition-all backdrop-blur-sm">
+                <i class="ph-bold ph-download-simple"></i> Export CSV
+            </button>
+        </div>
+    </header>
+
+    <main class="flex-1 flex flex-col lg:flex-row overflow-hidden relative">
+        
+        <!-- LEFT PANEL: STAT BUTTONS (Touch Target Area) -->
+        <div class="w-full lg:w-2/3 h-full overflow-y-auto p-3 lg:p-4 pb-24 lg:pb-4 space-y-4 bg-transparent no-scrollbar">
+            
+            <!-- ROW 1: SCORING -->
+            <div>
+                <div class="cat-header"><i class="ph-fill ph-rugby text-emerald-500"></i> Scoring</div>
+                <div class="grid grid-cols-2 lg:grid-cols-4 gap-2">
+                    <button onclick="logEvent('Try')" class="stat-btn btn-score"><i class="ph-fill ph-star"></i>Try</button>
+                    <button onclick="logEvent('Try Converted')" class="stat-btn btn-score"><i class="ph-fill ph-check-circle"></i>Try Converted</button>
+                    <button onclick="logEvent('Try Conceded')" class="stat-btn btn-score-bad"><i class="ph-fill ph-warning-circle"></i>Try Conceded</button>
+                    <button onclick="logEvent('Penalty Goal')" class="stat-btn btn-score"><i class="ph-fill ph-target"></i>Pen Goal</button>
+                </div>
+            </div>
+
+            <!-- ROW 2: ATTACK & DEFENCE POSITIVES -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                    <div class="cat-header"><i class="ph-fill ph-sword text-blue-500"></i> Attack & Go-Forward</div>
+                    <div class="grid grid-cols-2 lg:grid-cols-3 gap-2">
+                        <button onclick="logEvent('Clean Break')" class="stat-btn btn-attack"><i class="ph-fill ph-lightning"></i>Clean Break</button>
+                        <button onclick="logEvent('Defender Beaten')" class="stat-btn btn-attack"><i class="ph-fill ph-person-simple-run"></i>Def Beaten</button>
+                        <button onclick="logEvent('Offload')" class="stat-btn btn-attack"><i class="ph-fill ph-hands-clapping"></i>Offload</button>
+                        <button onclick="logEvent('Kick in Play')" class="stat-btn btn-attack"><i class="ph-fill ph-sneaker-move"></i>Kick In Play</button>
+                        <!-- Custom Attack Stats -->
+                        <button onclick="logEvent('POT')" class="stat-btn btn-attack" title="Pressure On Them"><i class="ph-fill ph-gauge"></i>POT</button>
+                        <button onclick="logEvent('Noah')" class="stat-btn btn-attack" title="No-one is at Home"><i class="ph-fill ph-house-line"></i>Noah</button>
+                    </div>
+                </div>
+                <div>
+                    <div class="cat-header"><i class="ph-fill ph-shield text-violet-500"></i> Defence Positives</div>
+                    <div class="grid grid-cols-2 lg:grid-cols-3 gap-2">
+                        <button onclick="logEvent('Tackle Made')" class="stat-btn btn-defence"><i class="ph-fill ph-users-three"></i>Tackle Made</button>
+                        <button onclick="logEvent('Dominant Tackle')" class="stat-btn btn-defence"><i class="ph-fill ph-barbell"></i>Dominant Hit</button>
+                        <!-- Custom Defence Stats -->
+                        <button onclick="logEvent('Double Tackle')" class="stat-btn btn-defence"><i class="ph-fill ph-users"></i>Double Tackle</button>
+                        <button onclick="logEvent('Turnover Won')" class="stat-btn btn-score"><i class="ph-fill ph-arrows-merge"></i>Turnover Won</button>
+                        <button onclick="logEvent('Penalty Won')" class="stat-btn btn-score"><i class="ph-fill ph-whistle"></i>Penalty Won</button>
+                        <button onclick="logEvent('Nause')" class="stat-btn btn-defence" title="Breakdown Nuisance"><i class="ph-fill ph-hand-grabbing"></i>Nause</button>
+                        <button onclick="logEvent('Wolf')" class="stat-btn btn-defence" title="Wolf System"><i class="ph-fill ph-paw-print"></i>Wolf</button>
+                        <button onclick="logEvent('Scout')" class="stat-btn btn-defence" title="Scout Role"><i class="ph-fill ph-binoculars"></i>Scout</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ROW 3: ERRORS & SET PIECE -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                    <div class="cat-header"><i class="ph-fill ph-warning-octagon text-rose-500"></i> Errors & Negatives</div>
+                    <div class="grid grid-cols-2 gap-2">
+                        <button onclick="logEvent('Handling Error')" class="stat-btn btn-error"><i class="ph-fill ph-hands-clapping text-white/20"></i>Handling Error</button>
+                        <button onclick="logEvent('Missed Tackle')" class="stat-btn btn-error"><i class="ph-fill ph-user-minus"></i>Missed Tackle</button>
+                        <button onclick="logEvent('Penalty Conceded')" class="stat-btn btn-error"><i class="ph-fill ph-flag"></i>Pen Conceded</button>
+                        <button onclick="logEvent('Turnover Lost')" class="stat-btn btn-error"><i class="ph-fill ph-arrows-split"></i>Turnover Lost</button>
+                    </div>
+                </div>
+                <div>
+                    <div class="cat-header"><i class="ph-fill ph-users-four text-amber-500"></i> Set Piece</div>
+                    <div class="grid grid-cols-2 lg:grid-cols-4 gap-2">
+                        <button onclick="logEvent('Scrum Won')" class="stat-btn btn-setpiece"><i class="ph-bold ph-arrow-circle-up"></i>Scr Won</button>
+                        <button onclick="logEvent('Scrum Lost')" class="stat-btn btn-error"><i class="ph-bold ph-arrow-circle-down"></i>Scr Lost</button>
+                        <button onclick="logEvent('Lineout Won')" class="stat-btn btn-setpiece"><i class="ph-bold ph-arrow-circle-up"></i>LO Won</button>
+                        <button onclick="logEvent('Lineout Lost')" class="stat-btn btn-error"><i class="ph-bold ph-arrow-circle-down"></i>LO Lost</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ROW 4: DISCIPLINE & CUSTOM -->
+            <div>
+                <div class="cat-header"><i class="ph-fill ph-cards text-slate-400"></i> Discipline & Custom</div>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-2">
+                    <button onclick="logEvent('Yellow Card')" class="stat-btn btn-discipline"><i class="ph-fill ph-rectangle"></i>Yellow Card</button>
+                    <button onclick="logEvent('Red Card')" class="stat-btn btn-score-bad"><i class="ph-fill ph-rectangle"></i>Red Card</button>
+                    <div class="flex gap-1 md:col-span-1 h-full">
+                        <input type="text" id="customEventInput" placeholder="Type custom log..." class="bg-black/50 text-white px-3 py-2 rounded-l-lg border border-white/10 w-full focus:outline-none focus:border-white/30 text-sm backdrop-blur-sm" onkeypress="if(event.key === 'Enter') logCustomEvent()">
+                        <button onclick="logCustomEvent()" class="bg-blue-600/50 hover:bg-blue-600/70 border border-blue-500/50 text-white px-4 py-2 rounded-r-lg font-bold transition-colors backdrop-blur-sm">ADD</button>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="h-12 w-full lg:hidden"></div> <!-- Spacer for mobile bottom -->
+        </div>
+
+        <!-- RIGHT PANEL: TIMELINE -->
+        <div class="w-full lg:w-1/3 bg-black/20 backdrop-blur-sm border-l border-white/10 flex flex-col h-1/3 lg:h-full absolute lg:relative bottom-0 lg:bottom-auto shadow-2xl lg:shadow-none">
+            <div class="p-3 border-b border-white/10 flex justify-between items-center bg-black/40 backdrop-blur z-10 sticky top-0">
+                <h2 class="font-bold text-slate-200 flex items-center gap-2"><i class="ph-fill ph-list-dashes text-blue-400"></i> Match Timeline</h2>
+                <span id="eventCount" class="text-xs bg-white/10 px-2 py-1 rounded text-white/70">0 events</span>
+            </div>
+            <div id="timeline" class="flex-1 overflow-y-auto p-3 space-y-2 no-scrollbar bg-transparent">
+                <!-- Timeline items injected here -->
+                <div class="text-center text-slate-500 text-sm mt-10 italic">Events will appear here...</div>
+            </div>
+        </div>
+    </main>
+
+    <!-- GRAPH MODAL OVERLAY -->
+    <div id="graphModal" class="fixed inset-0 bg-black/80 backdrop-blur-lg z-50 hidden flex-col">
+        <div class="flex justify-between items-center p-4 border-b border-white/10">
+            <h2 class="text-2xl font-bold text-white flex items-center gap-2"><i class="ph-fill ph-chart-line-up text-blue-400"></i> Match Momentum Graph</h2>
+            <button onclick="closeGraph()" class="bg-white/5 hover:bg-rose-600 border border-white/10 text-white p-2 rounded-full transition-colors">
+                <i class="ph-bold ph-x text-xl"></i>
+            </button>
+        </div>
+        <div class="flex-1 p-4 relative w-full h-full">
+            <canvas id="matchChart"></canvas>
+        </div>
+    </div>
+
+    <script>
+        // --- State Variables ---
+        let timerInterval;
+        let seconds = 0;
+        let isRunning = false;
+        let currentHalf = 1;
+        // Updating local storage key to fit new name, but falls back properly
+        let events = JSON.parse(localStorage.getItem('newmanRfcStats')) || JSON.parse(localStorage.getItem('hoveRfcStats')) || [];
+        let wakeLock = null;
+        let chartInstance = null;
+
+        // --- Wake Lock Logic (Keeps iPad screen on) ---
+        async function requestWakeLock() {
+            try {
+                if ('wakeLock' in navigator) {
+                    wakeLock = await navigator.wakeLock.request('screen');
+                    document.getElementById('wakeLockIndicator').classList.remove('hidden');
+                    wakeLock.addEventListener('release', () => {
+                        document.getElementById('wakeLockIndicator').classList.add('hidden');
+                    });
+                }
+            } catch (err) {
+                console.log(`Wake Lock error: ${err.name}, ${err.message}`);
+            }
+        }
+        
+        async function releaseWakeLock() {
+            if (wakeLock !== null) {
+                await wakeLock.release();
+                wakeLock = null;
+            }
+        }
+
+        // --- Timer Functions ---
+        function updateTimerDisplay() {
+            const mins = Math.floor(seconds / 60).toString().padStart(2, '0');
+            const secs = (seconds % 60).toString().padStart(2, '0');
+            document.getElementById('timerDisplay').innerText = `${mins}:${secs}`;
+        }
+
+        function toggleTimer() {
+            const btn = document.getElementById('btnStartPause');
+            const display = document.getElementById('timerDisplay');
+            if (isRunning) {
+                clearInterval(timerInterval);
+                btn.innerHTML = '<i class="ph-fill ph-play"></i> START';
+                btn.className = "bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 px-4 py-2 rounded font-bold flex items-center gap-1 transition-colors shadow-sm text-sm backdrop-blur-sm";
+                display.classList.remove('text-emerald-400', 'animate-pulse');
+                display.classList.add('text-red-500');
+                releaseWakeLock();
+            } else {
+                timerInterval = setInterval(() => {
+                    seconds++;
+                    updateTimerDisplay();
+                }, 1000);
+                btn.innerHTML = '<i class="ph-fill ph-pause"></i> PAUSE';
+                btn.className = "bg-amber-500/20 text-amber-400 border border-amber-500/30 px-4 py-2 rounded font-bold flex items-center gap-1 transition-colors shadow-sm text-sm backdrop-blur-sm";
+                display.classList.remove('text-red-500');
+                display.classList.add('text-emerald-400', 'animate-pulse');
+                requestWakeLock(); // Lock screen on start
+            }
+            isRunning = !isRunning;
+        }
+
+        function resetTimer() {
+            if (confirm("Are you sure you want to reset the timer?")) {
+                if (isRunning) toggleTimer();
+                seconds = 0;
+                updateTimerDisplay();
+            }
+        }
+
+        function setHalf(half) {
+            currentHalf = half;
+            if(half === 1) {
+                document.getElementById('btnH1').className = "px-3 py-1 rounded text-sm font-bold bg-white/20 text-white backdrop-blur shadow-sm transition-colors";
+                document.getElementById('btnH2').className = "px-3 py-1 rounded text-sm font-bold text-white/50 hover:text-white transition-colors";
+            } else {
+                document.getElementById('btnH2').className = "px-3 py-1 rounded text-sm font-bold bg-white/20 text-white backdrop-blur shadow-sm transition-colors";
+                document.getElementById('btnH1').className = "px-3 py-1 rounded text-sm font-bold text-white/50 hover:text-white transition-colors";
+            }
+        }
+
+        function getFormattedMatchTime() {
+            const mins = Math.floor(seconds / 60);
+            const secs = (seconds % 60).toString().padStart(2, '0');
+            return `${mins}:${secs}`;
+        }
+
+        // --- Logging Functions ---
+        function logEvent(action) {
+            const timestamp = new Date().getTime(); // Unique ID
+            const matchTime = getFormattedMatchTime();
+            
+            // Provide subtle haptic feedback if supported on mobile
+            if (navigator.vibrate) navigator.vibrate(50);
+
+            const newEvent = {
+                id: timestamp,
+                half: currentHalf,
+                time: matchTime,
+                seconds_raw: seconds, // Stored for accurate graph plotting
+                action: action,
+                realTime: new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})
+            };
+
+            events.unshift(newEvent); // Add to top of list
+            saveToLocal();
+            updateTimelineUI();
+        }
+
+        function logCustomEvent() {
+            const input = document.getElementById('customEventInput');
+            if (input.value.trim() !== '') {
+                logEvent(input.value.trim());
+                input.value = '';
+            }
+        }
+
+        function deleteEvent(id) {
+            events = events.filter(e => e.id !== id);
+            saveToLocal();
+            updateTimelineUI();
+        }
+
+        function saveToLocal() {
+            localStorage.setItem('newmanRfcStats', JSON.stringify(events));
+        }
+
+        function updateTimelineUI() {
+            const tl = document.getElementById('timeline');
+            const count = document.getElementById('eventCount');
+            
+            count.innerText = `${events.length} events`;
+            
+            if (events.length === 0) {
+                tl.innerHTML = '<div class="text-center text-slate-500 text-sm mt-10 italic">Events will appear here...</div>';
+                return;
+            }
+
+            tl.innerHTML = events.map(e => `
+                <div class="bg-white/5 backdrop-blur-sm p-2 rounded border-l-4 border-white/20 flex justify-between items-center group text-sm animate-[fadeIn_0.2s_ease-out]">
+                    <div>
+                        <span class="text-white/60 font-mono text-xs font-bold mr-2">H${e.half} ${e.time}</span>
+                        <span class="font-semibold text-slate-100">${e.action}</span>
+                    </div>
+                    <button onclick="deleteEvent(${e.id})" class="text-slate-500 hover:text-rose-400 opacity-0 group-hover:opacity-100 transition-opacity p-1">
+                        <i class="ph-bold ph-x"></i>
+                    </button>
+                </div>
+            `).join('');
+        }
+
+        // --- Export Logic ---
+        function exportCSV() {
+            if (events.length === 0) {
+                alert("No events to export yet.");
+                return;
+            }
+
+            let csvContent = "data:text/csv;charset=utf-8,";
+            csvContent += "Half,Match Time,Action,Real Time\n";
+
+            // Sort chronologically for the export
+            const sortedEvents = [...events].sort((a, b) => {
+                if(a.half !== b.half) return a.half - b.half;
+                return a.seconds_raw - b.seconds_raw;
+            });
+
+            sortedEvents.forEach(e => {
+                const row = `"${e.half}","${e.time}","${e.action}","${e.realTime}"`;
+                csvContent += row + "\n";
+            });
+
+            const encodedUri = encodeURI(csvContent);
+            const link = document.createElement("a");
+            link.setAttribute("href", encodedUri);
+            
+            let opponent = document.getElementById('opponentName').value.trim();
+            if(!opponent) opponent = "Unknown";
+            const dateStr = new Date().toISOString().split('T')[0];
+            
+            link.setAttribute("download", `Newman_Rugby_vs_${opponent}_${dateStr}.csv`);
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+
+        // --- Match Graph Logic ---
+        function openGraph() {
+            document.getElementById('graphModal').classList.remove('hidden');
+            document.getElementById('graphModal').classList.add('flex');
+            renderGraph();
+        }
+
+        function closeGraph() {
+            document.getElementById('graphModal').classList.add('hidden');
+            document.getElementById('graphModal').classList.remove('flex');
+        }
+
+        function renderGraph() {
+            const ctx = document.getElementById('matchChart').getContext('2d');
+            if (chartInstance) chartInstance.destroy();
+
+            if (events.length === 0) return; // Nothing to chart
+
+            // Helper to map an action to a Y-category and specific color
+            const mapActionToCategory = (action) => {
+                const a = action.toLowerCase();
+                // Scoring & Cards
+                if (a.includes('try') || a.includes('card')) {
+                    let color = '#10b981'; // Green for our try
+                    if(a.includes('conceded') || a.includes('red')) color = '#ef4444'; // Red
+                    if(a.includes('yellow')) color = '#eab308'; // Yellow
+                    return { y: 4, color: color, shape: 'triangle' };
+                }
+                // Attack Specifics
+                if (a.includes('break') || a.includes('beaten') || a.includes('offload') || a.includes('kick') || a.includes('pot') || a.includes('noah')) {
+                    return { y: 3, color: '#3b82f6', shape: 'circle' };
+                }
+                // Defence Specifics
+                if (a.includes('tackle made') || a.includes('dominant') || a.includes('turnover won') || a.includes('penalty won') || a.includes('double tackle') || a.includes('nause') || a.includes('wolf') || a.includes('scout')) {
+                    return { y: 2, color: '#8b5cf6', shape: 'circle' };
+                }
+                // Set Piece
+                if (a.includes('scrum') || a.includes('lineout')) {
+                    const color = a.includes('won') ? '#f59e0b' : '#ef4444';
+                    return { y: 1, color: color, shape: 'rect' };
+                }
+                // Errors & Penalties (Default fallback for negatives)
+                if (a.includes('missed') || a.includes('error') || a.includes('lost') || a.includes('conceded')) {
+                    return { y: 0, color: '#f43f5e', shape: 'circle' };
+                }
+                
+                return { y: 2.5, color: '#94a3b8', shape: 'circle' }; // Unknown/Custom
+            };
+
+            // Prepare datasets
+            const dataPoints = [...events].reverse().map(e => {
+                const style = mapActionToCategory(e.action);
+                // Adjust time for half 2 so it plots continuously on X axis
+                const timeInMinutes = (e.seconds_raw / 60) + (e.half === 2 ? 40 : 0); 
+                return {
+                    x: timeInMinutes,
+                    y: style.y,
+                    action: e.action,
+                    half: e.half,
+                    displayTime: e.time,
+                    bgColor: style.color,
+                    shape: style.shape
+                };
+            });
+
+            Chart.defaults.color = '#94a3b8';
+            Chart.defaults.font.family = 'sans-serif';
+
+            chartInstance = new Chart(ctx, {
+                type: 'scatter',
+                data: {
+                    datasets: [{
+                        label: 'Match Events',
+                        data: dataPoints,
+                        pointBackgroundColor: dataPoints.map(dp => dp.bgColor),
+                        pointBorderColor: '#ffffff',
+                        pointBorderWidth: 1,
+                        pointRadius: 6,
+                        pointHoverRadius: 9,
+                        pointStyle: dataPoints.map(dp => dp.shape),
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            backgroundColor: 'rgba(15, 23, 42, 0.9)',
+                            titleFont: { size: 14 },
+                            bodyFont: { size: 14, weight: 'bold' },
+                            padding: 10,
+                            callbacks: {
+                                label: function(context) {
+                                    const d = context.raw;
+                                    return `H${d.half} ${d.displayTime} | ${d.action}`;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            type: 'linear',
+                            position: 'bottom',
+                            title: { display: true, text: 'Match Time (Minutes)', color: '#cbd5e1' },
+                            grid: { color: 'rgba(255,255,255,0.05)' },
+                            min: 0,
+                            max: Math.max(80, Math.ceil(Math.max(...dataPoints.map(d=>d.x))/10)*10)
+                        },
+                        y: {
+                            min: -0.5,
+                            max: 4.5,
+                            ticks: {
+                                stepSize: 1,
+                                callback: function(value) {
+                                    const labels = ['Errors/Pen', 'Set Piece', 'Defence', 'Attack', 'Scoring/Cards'];
+                                    return labels[value] || '';
+                                }
+                            },
+                            grid: { color: 'rgba(255,255,255,0.1)' }
+                        }
+                    }
+                }
+            });
+        }
+
+        // --- Initialization ---
+        updateTimerDisplay();
+        updateTimelineUI();
+
+    </script>
+</body>
+</html>
