@@ -4,11 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Newman Rugby Academy Stats</title>
-    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Phosphor Icons -->
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
-    <!-- Chart.js for Timeline Graph -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
     <style>
@@ -27,7 +24,7 @@
             scrollbar-width: none;
         }
 
-        /* Tactile 3D Buttons for iPad - Glassmorphism Update */
+        /* Tactile Glassy 3D Buttons for iPad */
         .stat-btn {
             display: flex;
             flex-direction: column;
@@ -36,39 +33,41 @@
             padding: 0.75rem 0.5rem;
             border-radius: 0.75rem;
             font-weight: 700;
-            font-size: 0.9rem;
+            font-size: 0.85rem;
             transition: all 0.1s ease;
-            /* Dark glassy black background */
-            background: rgba(0, 0, 0, 0.4);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
-            /* Subtle white border */
-            border: 1px solid rgba(255, 255, 255, 0.15);
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.1);
-            color: #f1f5f9;
+            
+            /* Glassmorphism Background */
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: #f8fafc;
+            box-shadow: 0 4px 0 0 rgba(0,0,0,0.6);
+            
             user-select: none;
             cursor: pointer;
+            text-align: center;
+            line-height: 1.1;
         }
         .stat-btn:active {
-            transform: translateY(2px);
-            box-shadow: 0 2px 4px -1px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+            transform: translateY(4px);
+            box-shadow: 0 0 0 0 rgba(0,0,0,0.6);
+            background: rgba(255, 255, 255, 0.08);
         }
         .stat-btn i {
-            font-size: 1.85rem;
-            margin-bottom: 0.35rem;
-            opacity: 1; /* Vibrant icons */
-            /* Adds a subtle glow matching the icon's color to make it pop */
-            filter: drop-shadow(0 0px 6px currentColor); 
+            font-size: 1.75rem;
+            margin-bottom: 0.25rem;
+            opacity: 1; /* Solid opacity for high visibility */
+            filter: drop-shadow(0px 2px 4px rgba(0,0,0,0.5)); /* Pop effect */
         }
 
-        /* Themed Button Colors - Bright and Bold for Dual Coding */
-        .btn-score i { color: #4ade80; } /* Bright Green */
-        .btn-score-bad i { color: #f87171; } /* Bright Red */
-        .btn-attack i { color: #60a5fa; } /* Bright Blue */
-        .btn-defence i { color: #c084fc; } /* Bright Purple */
-        .btn-error i { color: #fb7185; } /* Bright Rose/Red */
-        .btn-setpiece i { color: #fbbf24; } /* Bright Amber */
-        .btn-discipline i { color: #fef08a; } /* Bright Yellow */
+        /* Dual Coding: Bright Icon Colors applied only to the icons */
+        .btn-score i { color: #10b981; } /* Emerald / Green */
+        .btn-score-bad i { color: #ef4444; } /* Red */
+        .btn-attack i { color: #3b82f6; } /* Blue */
+        .btn-defence i { color: #a855f7; } /* Purple */
+        .btn-error i { color: #f43f5e; } /* Rose */
+        .btn-setpiece i { color: #f59e0b; } /* Amber */
+        .btn-discipline i { color: #fbbf24; } /* Yellow */
         
         .cat-header {
             font-size: 0.85rem;
@@ -86,50 +85,44 @@
 
 <body class="bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-zinc-800 via-black to-black text-slate-100 font-sans h-screen overflow-hidden flex flex-col">
 
-    <!-- HEADER / TOP BAR -->
-    <header class="bg-white/5 backdrop-blur-md border-b border-white/10 p-2 lg:p-4 flex flex-wrap lg:flex-nowrap justify-between items-center z-10 shadow-md gap-2">
+    <header class="bg-white/5 backdrop-blur-md border-b border-white/10 p-2 lg:p-4 flex flex-wrap lg:flex-nowrap justify-between items-center z-10 shadow-lg gap-2">
         
-        <!-- Left: Logo & Match Details -->
         <div class="flex items-center gap-3 w-full lg:w-auto">
-            <img src="Newman_Rugby_Academy.png" alt="Newman Rugby Academy Logo" onerror="this.outerHTML='<div class=\'w-12 h-12 bg-white/10 border border-white/20 rounded flex items-center justify-center font-bold text-xl\'>N</div>'" class="w-12 h-12 object-contain rounded-lg p-1">
+            <img src="NewmaN Ace Logo v2" alt="Newman Rugby Academy Logo" onerror="this.outerHTML='<div class=\'w-12 h-12 bg-rose-600 rounded flex items-center justify-center font-bold text-xl\'>N</div>'" class="w-12 h-12 object-contain bg-black rounded-lg p-1 border border-white/10 shadow-inner">
             <div>
                 <h1 class="text-xl font-bold tracking-tight text-white leading-tight">Newman Rugby Academy</h1>
-                <input type="text" id="opponentName" placeholder="vs. Opponent" class="bg-black/50 text-sm text-white px-2 py-1 rounded border border-white/10 focus:outline-none focus:border-white/30 w-48 mt-1 backdrop-blur-sm">
+                <input type="text" id="opponentName" placeholder="vs. Opponent" class="bg-black/50 text-sm text-white px-2 py-1 rounded border border-white/10 focus:outline-none focus:border-blue-500 w-48 mt-1 backdrop-blur">
             </div>
         </div>
 
-        <!-- Center: Timer & Controls -->
         <div class="flex items-center gap-3 bg-black/40 p-2 rounded-xl border border-white/10 shadow-inner w-full lg:w-auto justify-center backdrop-blur-md">
             <div id="timerDisplay" class="text-4xl font-mono font-bold min-w-[140px] text-center text-red-500 tracking-wider">00:00</div>
             
             <div class="flex flex-col gap-1">
                 <div class="flex gap-1">
-                    <button id="btnStartPause" onclick="toggleTimer()" class="bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 px-4 py-2 rounded font-bold flex items-center gap-1 transition-colors shadow-sm text-sm backdrop-blur-sm">
+                    <button id="btnStartPause" onclick="toggleTimer()" class="bg-emerald-600 hover:bg-emerald-500 text-white px-4 py-2 rounded font-bold flex items-center gap-1 transition-colors shadow-sm text-sm border border-emerald-500/50">
                         <i class="ph-fill ph-play"></i> START
                     </button>
-                    <button onclick="resetTimer()" class="bg-white/5 border border-white/10 hover:bg-white/10 text-white px-3 py-2 rounded transition-colors shadow-sm backdrop-blur-sm" title="Reset Timer">
+                    <button onclick="resetTimer()" class="bg-white/10 hover:bg-white/20 text-white px-3 py-2 rounded transition-colors shadow-sm border border-white/10" title="Reset Timer">
                         <i class="ph-bold ph-arrow-counter-clockwise"></i>
                     </button>
                 </div>
-                <!-- Wake Lock Indicator -->
                 <div id="wakeLockIndicator" class="hidden text-xs text-emerald-400 font-semibold flex items-center gap-1 justify-center">
                     <i class="ph-fill ph-lock-key"></i> Screen Locked ON
                 </div>
             </div>
 
-            <!-- Half Toggle -->
-            <div class="flex bg-black/40 border border-white/10 rounded-lg p-1 ml-2 backdrop-blur-sm">
-                <button id="btnH1" onclick="setHalf(1)" class="px-3 py-1 rounded text-sm font-bold bg-white/20 text-white backdrop-blur shadow-sm transition-colors">H1</button>
-                <button id="btnH2" onclick="setHalf(2)" class="px-3 py-1 rounded text-sm font-bold text-white/50 hover:text-white transition-colors">H2</button>
+            <div class="flex bg-black/50 rounded-lg p-1 border border-white/10 ml-2">
+                <button id="btnH1" onclick="setHalf(1)" class="px-3 py-1 rounded text-sm font-bold bg-blue-600/80 text-white transition-colors border border-blue-500/50">H1</button>
+                <button id="btnH2" onclick="setHalf(2)" class="px-3 py-1 rounded text-sm font-bold text-slate-400 hover:text-white transition-colors">H2</button>
             </div>
         </div>
 
-        <!-- Right: Actions -->
         <div class="flex gap-2 w-full lg:w-auto justify-end">
-            <button onclick="openGraph()" class="bg-indigo-500/20 text-indigo-300 border border-indigo-500/30 hover:bg-indigo-500/30 px-3 py-2 rounded font-bold text-sm flex items-center gap-1 shadow-md transition-all backdrop-blur-sm">
+            <button onclick="openGraph()" class="bg-indigo-600/80 hover:bg-indigo-500 text-white px-3 py-2 rounded font-bold text-sm flex items-center gap-1 shadow-md transition-all border border-indigo-500/50">
                 <i class="ph-fill ph-chart-line-up"></i> Match Graph
             </button>
-            <button onclick="exportCSV()" class="bg-sky-500/20 text-sky-300 border border-sky-500/30 hover:bg-sky-500/30 px-3 py-2 rounded font-bold text-sm flex items-center gap-1 shadow-md transition-all backdrop-blur-sm">
+            <button onclick="exportCSV()" class="bg-sky-600/80 hover:bg-sky-500 text-white px-3 py-2 rounded font-bold text-sm flex items-center gap-1 shadow-md transition-all border border-sky-500/50">
                 <i class="ph-bold ph-download-simple"></i> Export CSV
             </button>
         </div>
@@ -137,10 +130,8 @@
 
     <main class="flex-1 flex flex-col lg:flex-row overflow-hidden relative">
         
-        <!-- LEFT PANEL: STAT BUTTONS (Touch Target Area) -->
-        <div class="w-full lg:w-2/3 h-full overflow-y-auto p-3 lg:p-4 pb-24 lg:pb-4 space-y-4 bg-transparent no-scrollbar">
+        <div class="w-full lg:w-2/3 h-full overflow-y-auto p-3 lg:p-4 pb-24 lg:pb-4 space-y-4 no-scrollbar">
             
-            <!-- ROW 1: SCORING -->
             <div>
                 <div class="cat-header"><i class="ph-fill ph-rugby text-emerald-500"></i> Scoring</div>
                 <div class="grid grid-cols-2 lg:grid-cols-4 gap-2">
@@ -151,7 +142,6 @@
                 </div>
             </div>
 
-            <!-- ROW 2: ATTACK & DEFENCE POSITIVES -->
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                     <div class="cat-header"><i class="ph-fill ph-sword text-blue-500"></i> Attack & Go-Forward</div>
@@ -160,28 +150,25 @@
                         <button onclick="logEvent('Defender Beaten')" class="stat-btn btn-attack"><i class="ph-fill ph-person-simple-run"></i>Def Beaten</button>
                         <button onclick="logEvent('Offload')" class="stat-btn btn-attack"><i class="ph-fill ph-hands-clapping"></i>Offload</button>
                         <button onclick="logEvent('Kick in Play')" class="stat-btn btn-attack"><i class="ph-fill ph-sneaker-move"></i>Kick In Play</button>
-                        <!-- Custom Attack Stats -->
-                        <button onclick="logEvent('POT')" class="stat-btn btn-attack" title="Pressure On Them"><i class="ph-fill ph-gauge"></i>POT</button>
-                        <button onclick="logEvent('Noah')" class="stat-btn btn-attack" title="No-one is at Home"><i class="ph-fill ph-house-line"></i>Noah</button>
+                        <button onclick="logEvent('POT')" class="stat-btn btn-attack"><i class="ph-fill ph-gauge"></i>POT</button>
+                        <button onclick="logEvent('Noah')" class="stat-btn btn-attack"><i class="ph-fill ph-house-line"></i>Noah</button>
                     </div>
                 </div>
                 <div>
                     <div class="cat-header"><i class="ph-fill ph-shield text-violet-500"></i> Defence Positives</div>
-                    <div class="grid grid-cols-2 lg:grid-cols-3 gap-2">
+                    <div class="grid grid-cols-2 gap-2">
                         <button onclick="logEvent('Tackle Made')" class="stat-btn btn-defence"><i class="ph-fill ph-users-three"></i>Tackle Made</button>
                         <button onclick="logEvent('Dominant Tackle')" class="stat-btn btn-defence"><i class="ph-fill ph-barbell"></i>Dominant Hit</button>
-                        <!-- Custom Defence Stats -->
                         <button onclick="logEvent('Double Tackle')" class="stat-btn btn-defence"><i class="ph-fill ph-users"></i>Double Tackle</button>
+                        <button onclick="logEvent('Nause')" class="stat-btn btn-defence"><i class="ph-fill ph-hand-grabbing"></i>Nause</button>
+                        <button onclick="logEvent('Wolf')" class="stat-btn btn-defence"><i class="ph-fill ph-paw-print"></i>Wolf</button>
+                        <button onclick="logEvent('Scout')" class="stat-btn btn-defence"><i class="ph-fill ph-binoculars"></i>Scout</button>
                         <button onclick="logEvent('Turnover Won')" class="stat-btn btn-score"><i class="ph-fill ph-arrows-merge"></i>Turnover Won</button>
                         <button onclick="logEvent('Penalty Won')" class="stat-btn btn-score"><i class="ph-fill ph-whistle"></i>Penalty Won</button>
-                        <button onclick="logEvent('Nause')" class="stat-btn btn-defence" title="Breakdown Nuisance"><i class="ph-fill ph-hand-grabbing"></i>Nause</button>
-                        <button onclick="logEvent('Wolf')" class="stat-btn btn-defence" title="Wolf System"><i class="ph-fill ph-paw-print"></i>Wolf</button>
-                        <button onclick="logEvent('Scout')" class="stat-btn btn-defence" title="Scout Role"><i class="ph-fill ph-binoculars"></i>Scout</button>
                     </div>
                 </div>
             </div>
 
-            <!-- ROW 3: ERRORS & SET PIECE -->
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                     <div class="cat-header"><i class="ph-fill ph-warning-octagon text-rose-500"></i> Errors & Negatives</div>
@@ -203,23 +190,20 @@
                 </div>
             </div>
 
-            <!-- ROW 4: DISCIPLINE & CUSTOM -->
             <div>
                 <div class="cat-header"><i class="ph-fill ph-cards text-slate-400"></i> Discipline & Custom</div>
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-2">
                     <button onclick="logEvent('Yellow Card')" class="stat-btn btn-discipline"><i class="ph-fill ph-rectangle"></i>Yellow Card</button>
                     <button onclick="logEvent('Red Card')" class="stat-btn btn-score-bad"><i class="ph-fill ph-rectangle"></i>Red Card</button>
                     <div class="flex gap-1 md:col-span-1 h-full">
-                        <input type="text" id="customEventInput" placeholder="Type custom log..." class="bg-black/50 text-white px-3 py-2 rounded-l-lg border border-white/10 w-full focus:outline-none focus:border-white/30 text-sm backdrop-blur-sm" onkeypress="if(event.key === 'Enter') logCustomEvent()">
-                        <button onclick="logCustomEvent()" class="bg-blue-600/50 hover:bg-blue-600/70 border border-blue-500/50 text-white px-4 py-2 rounded-r-lg font-bold transition-colors backdrop-blur-sm">ADD</button>
+                        <input type="text" id="customEventInput" placeholder="Type custom log..." class="bg-black/50 text-white px-3 py-2 rounded-l-lg border border-white/10 w-full focus:outline-none focus:border-blue-500 text-sm backdrop-blur-sm" onkeypress="if(event.key === 'Enter') logCustomEvent()">
+                        <button onclick="logCustomEvent()" class="bg-blue-600/80 hover:bg-blue-500 text-white px-4 py-2 rounded-r-lg font-bold transition-colors border border-blue-500/50">ADD</button>
                     </div>
                 </div>
             </div>
             
-            <div class="h-12 w-full lg:hidden"></div> <!-- Spacer for mobile bottom -->
-        </div>
+            <div class="h-12 w-full lg:hidden"></div> </div>
 
-        <!-- RIGHT PANEL: TIMELINE -->
         <div class="w-full lg:w-1/3 bg-white/5 backdrop-blur-md border-l border-white/10 flex flex-col h-1/3 lg:h-full absolute lg:relative bottom-0 lg:bottom-auto shadow-2xl lg:shadow-none">
             <div class="p-3 border-b border-white/10 flex justify-between items-center bg-black/40 backdrop-blur z-10 sticky top-0">
                 <h2 class="font-bold text-slate-200 flex items-center gap-2"><i class="ph-fill ph-list-dashes text-blue-400"></i> Match Timeline</h2>
@@ -230,14 +214,12 @@
                     </button>
                 </div>
             </div>
-            <div id="timeline" class="flex-1 overflow-y-auto p-3 space-y-2 no-scrollbar bg-black/20">
-                <!-- Timeline items injected here -->
+            <div class="flex-1 overflow-y-auto p-3 space-y-2 no-scrollbar bg-black/20" id="timeline">
                 <div class="text-center text-slate-500 text-sm mt-10 italic">Events will appear here...</div>
             </div>
         </div>
     </main>
 
-    <!-- GRAPH MODAL OVERLAY -->
     <div id="graphModal" class="fixed inset-0 bg-black/95 backdrop-blur-xl z-50 hidden flex-col">
         <div class="flex justify-between items-center p-4 border-b border-white/10">
             <div>
@@ -254,17 +236,14 @@
     </div>
 
     <script>
-        // --- State Variables ---
-        let timerInterval;
         let seconds = 0;
         let isRunning = false;
         let currentHalf = 1;
-        // Updating local storage key to fit new name, but falls back properly
-        let events = JSON.parse(localStorage.getItem('newmanRfcStats')) || JSON.parse(localStorage.getItem('hoveRfcStats')) || [];
+        let events = JSON.parse(localStorage.getItem('newmanRfcStats')) || [];
         let wakeLock = null;
         let chartInstance = null;
+        let timerInterval;
 
-        // --- Wake Lock Logic (Keeps iPad screen on) ---
         async function requestWakeLock() {
             try {
                 if ('wakeLock' in navigator) {
@@ -286,7 +265,6 @@
             }
         }
 
-        // --- Timer Functions ---
         function updateTimerDisplay() {
             const mins = Math.floor(seconds / 60).toString().padStart(2, '0');
             const secs = (seconds % 60).toString().padStart(2, '0');
@@ -299,7 +277,7 @@
             if (isRunning) {
                 clearInterval(timerInterval);
                 btn.innerHTML = '<i class="ph-fill ph-play"></i> START';
-                btn.className = "bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 px-4 py-2 rounded font-bold flex items-center gap-1 transition-colors shadow-sm text-sm backdrop-blur-sm";
+                btn.className = "bg-emerald-600 hover:bg-emerald-500 text-white px-4 py-2 rounded font-bold flex items-center gap-1 transition-colors shadow-sm text-sm border border-emerald-500/50";
                 display.classList.remove('text-emerald-400', 'animate-pulse');
                 display.classList.add('text-red-500');
                 releaseWakeLock();
@@ -309,10 +287,10 @@
                     updateTimerDisplay();
                 }, 1000);
                 btn.innerHTML = '<i class="ph-fill ph-pause"></i> PAUSE';
-                btn.className = "bg-amber-500/20 text-amber-400 border border-amber-500/30 px-4 py-2 rounded font-bold flex items-center gap-1 transition-colors shadow-sm text-sm backdrop-blur-sm";
+                btn.className = "bg-amber-600 hover:bg-amber-500 text-white px-4 py-2 rounded font-bold flex items-center gap-1 transition-colors shadow-sm text-sm border border-amber-500/50";
                 display.classList.remove('text-red-500');
                 display.classList.add('text-emerald-400', 'animate-pulse');
-                requestWakeLock(); // Lock screen on start
+                requestWakeLock();
             }
             isRunning = !isRunning;
         }
@@ -328,11 +306,11 @@
         function setHalf(half) {
             currentHalf = half;
             if(half === 1) {
-                document.getElementById('btnH1').className = "px-3 py-1 rounded text-sm font-bold bg-white/20 text-white backdrop-blur shadow-sm transition-colors";
-                document.getElementById('btnH2').className = "px-3 py-1 rounded text-sm font-bold text-white/50 hover:text-white transition-colors";
+                document.getElementById('btnH1').className = "px-3 py-1 rounded text-sm font-bold bg-blue-600/80 text-white transition-colors border border-blue-500/50";
+                document.getElementById('btnH2').className = "px-3 py-1 rounded text-sm font-bold text-slate-400 hover:text-white transition-colors";
             } else {
-                document.getElementById('btnH2').className = "px-3 py-1 rounded text-sm font-bold bg-white/20 text-white backdrop-blur shadow-sm transition-colors";
-                document.getElementById('btnH1').className = "px-3 py-1 rounded text-sm font-bold text-white/50 hover:text-white transition-colors";
+                document.getElementById('btnH2').className = "px-3 py-1 rounded text-sm font-bold bg-blue-600/80 text-white transition-colors border border-blue-500/50";
+                document.getElementById('btnH1').className = "px-3 py-1 rounded text-sm font-bold text-slate-400 hover:text-white transition-colors";
             }
         }
 
@@ -342,24 +320,22 @@
             return `${mins}:${secs}`;
         }
 
-        // --- Logging Functions ---
         function logEvent(action) {
-            const timestamp = new Date().getTime(); // Unique ID
+            const timestamp = new Date().getTime();
             const matchTime = getFormattedMatchTime();
             
-            // Provide subtle haptic feedback if supported on mobile
             if (navigator.vibrate) navigator.vibrate(50);
 
             const newEvent = {
                 id: timestamp,
                 half: currentHalf,
                 time: matchTime,
-                seconds_raw: seconds, // Stored for accurate graph plotting
+                seconds_raw: seconds,
                 action: action,
                 realTime: new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})
             };
 
-            events.unshift(newEvent); // Add to top of list
+            events.unshift(newEvent);
             saveToLocal();
             updateTimelineUI();
         }
@@ -408,9 +384,9 @@
             }
 
             tl.innerHTML = events.map(e => `
-                <div class="bg-white/5 backdrop-blur-sm p-2 rounded border-l-4 border-white/20 flex justify-between items-center group text-sm animate-[fadeIn_0.2s_ease-out]">
+                <div class="bg-white/5 p-2 rounded border-l-4 border-blue-500 flex justify-between items-center group text-sm animate-[fadeIn_0.2s_ease-out] shadow-sm backdrop-blur">
                     <div>
-                        <span class="text-white/60 font-mono text-xs font-bold mr-2">H${e.half} ${e.time}</span>
+                        <span class="text-blue-400 font-mono text-xs font-bold mr-2">H${e.half} ${e.time}</span>
                         <span class="font-semibold text-slate-100">${e.action}</span>
                     </div>
                     <button onclick="deleteEvent(${e.id})" class="text-slate-500 hover:text-rose-400 opacity-0 group-hover:opacity-100 transition-opacity p-1">
@@ -420,7 +396,6 @@
             `).join('');
         }
 
-        // --- Export Logic ---
         function exportCSV() {
             if (events.length === 0) {
                 alert("No events to export yet.");
@@ -430,7 +405,6 @@
             let csvContent = "data:text/csv;charset=utf-8,";
             csvContent += "Half,Match Time,Action,Real Time\n";
 
-            // Sort chronologically for the export
             const sortedEvents = [...events].sort((a, b) => {
                 if(a.half !== b.half) return a.half - b.half;
                 return a.seconds_raw - b.seconds_raw;
@@ -449,13 +423,12 @@
             if(!opponent) opponent = "Unknown";
             const dateStr = new Date().toISOString().split('T')[0];
             
-            link.setAttribute("download", `Newman_Rugby_vs_${opponent}_${dateStr}.csv`);
+            link.setAttribute("download", `Newman_Rugby_Academy_vs_${opponent}_${dateStr}.csv`);
             document.body.appendChild(link);
             link.click();
             document.body.removeChild(link);
         }
 
-        // --- Match Graph Logic ---
         function openGraph() {
             document.getElementById('graphModal').classList.remove('hidden');
             document.getElementById('graphModal').classList.add('flex');
@@ -647,7 +620,6 @@
             });
         }
 
-        // --- Initialization ---
         updateTimerDisplay();
         updateTimelineUI();
 
